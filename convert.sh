@@ -36,6 +36,7 @@ FINAL_OUTPUT_INFO=
 FINAL_PATH=
 SYSTEM_TYPE=
 clean=0
+check=0
 
 ########################################################################
 
@@ -88,9 +89,8 @@ MacOS/Linux 小鹤双拼码表转换工具
                                 该选项用于指定生成的码表文件名，默认和需转换文件同路径
                                 用法和注意事项等同于 --inputfilename
 
+--check                         (选填)该选项无后续参数，会自动检查转换所需依赖并给出结果以供检查
 -c | --clean                    (选填)该选项无后续参数，会删掉原始未转换的码表文件
-                                举例：
-                                    -c
 -h | --help                     该选项无后续参数，使用后将打印帮助信息并退出脚本
 "
 }
@@ -108,19 +108,14 @@ fi
 # 检查系统信息
 _info "正在检查系统版本..."
 if [ -f /usr/bin/sw_vers ]; then
-    _success "该系统是 MacOS，以下是具体系统信息："
-    sw_vers 2>/dev/null
     SYSTEM_TYPE="MacOS"
 elif [ -f /usr/bin/lsb_release ]; then
     system_name=$(lsb_release -i 2>/dev/null)
     if [[ ${system_name} =~ "Debian" ]]; then
-        _success "该系统是 Debian，以下是具体系统信息："
         SYSTEM_TYPE="Debian"
     elif [[ ${system_name} =~ "Ubuntu" ]]; then
-        _success "该系统是 Ubuntu，以下是具体系统信息："
         SYSTEM_TYPE="Ubuntu"
     fi
-    lsb_release -a 2>/dev/null
 else
     _error "暂未适配该系统，退出..."
     exit 1
@@ -145,8 +140,6 @@ if ! which xcode-select > /dev/null 2>&1; then
     _warning "如果失败请打开浏览器搜索关键词：Command Line Tools下载"
     _warning "并根据搜到的教程去苹果官网下载安装，完成后重新运行此脚本"
     exit 0
-else
-    _success "开发者工具包已安装！"
 fi
 }
 
@@ -194,8 +187,6 @@ if ! which brew > /dev/null 2>&1; then
         } >> /Users/"${username}"/.zprofile
         source /Users/"${username}"/.zprofile
     fi
-else
-    _success "HomeBrew 已安装！"
 fi
 }
 
@@ -233,12 +224,29 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
     fi
     FIXED_PATH=$(mdfind -name "${INPUT_NAME}")
     FINAL_PATH=$(dirname "${FIXED_PATH}")
-    FINAL_INPUT_INFO="${INPUT_NAME}"
-    FINAL_OUTPUT_INFO="${OUTPUT_NAME}"
+    FINAL_INPUT_INFO="${FIXED_PATH}"
+    FINAL_OUTPUT_INFO="${FINAL_PATH}${OUTPUT_NAME}"
 else
     _error "输入了多余选项参数！只能同时存在要转换文件转换前后的 <绝对路径> 或 <文件名(仅 MacOS 适用)> "
     exit 1
 fi
+}
+
+function _check_result(){
+_info "系统信息: "
+if [[ ${SYSTEM_TYPE} == "MacOS" ]]; then
+    _print "$(sw_vers 2>/dev/null)"
+elif [[ ${SYSTEM_TYPE} =~ "Debian"|"Ubuntu" ]]; then
+    _print "$(lsb_release -a 2>/dev/null)"
+fi
+if which xcode-select > /dev/null 2>&1; then
+    _success "开发者工具包已安装！"
+fi
+if which brew > /dev/null 2>&1; then
+    _success "HomeBrew 已安装！"
+fi
+_info "最终输入文件路径信息: "$(_print "${FINAL_INPUT_INFO}")
+_info "最终输出文件路径信息: "$(_print "${FINAL_OUTPUT_INFO}")
 }
 
 function _convert(){
@@ -248,9 +256,9 @@ sed -i 's/,/=/g' "${FINAL_PATH}"/tmp.ini
 sed -i 's/-/,/g' "${FINAL_PATH}"/tmp.ini
 unix2dos < "${FINAL_PATH}"/tmp.ini | iconv -f UTF-8 -t UTF-16LE > "${FINAL_OUTPUT_INFO}"
 rm -rf "${FINAL_PATH}"/tmp.ini
-_success "已完成转换，输出文件路径: ${FINAL_OUTPUT_INFO}"
+_success "已完成转换，输出文件路径: "$(_print "${FINAL_OUTPUT_INFO}")
 if [[ ${clean} == 0 ]]; then
-    _success "原始文件路径: ${FINAL_INPUT_INFO}"
+    _success "原始文件路径: "$(_print "${FINAL_INPUT_INFO}")
     _success "原始文件可自行删除"
 elif [[ ${clean} == 1 ]]; then
     rm -rf "${FINAL_INPUT_INFO}"
@@ -259,7 +267,7 @@ fi
 _success "之后请将转换后的码表文件内容自行导入搜狗输入法的 <自定义短语设置>"
 }
 
-if ! ARGS=$(getopt -a -o u:i:o:I:O:s:hc -l username:,speedlink:,inputfile:,outputfile:,inputfilename:,outputfilename:,help,clean -- "$@")
+if ! ARGS=$(getopt -a -o u:i:o:I:O:s:hc -l username:,speedlink:,inputfile:,outputfile:,inputfilename:,outputfilename:,help,clean,check -- "$@")
 then
     _error "无效的参数，请查看帮助信息"
     _help
@@ -299,6 +307,9 @@ while true; do
     -c | --clean)
         clean=1
         ;;
+    --check)
+        check=1
+        ;;
     --)
         shift
         break
@@ -308,4 +319,5 @@ while true; do
 done
 
 _check
+[[ ${check} == 1 ]] && _check_result && exit 0
 _convert

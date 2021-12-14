@@ -10,11 +10,15 @@
 其实已经有一个通用性比较强的码表转换工具了：
 深蓝词库转换： https://github.com/studyzy/imewlconverter
 >MacOS 下安装完 .Net 包后需要将 dotnet 加入环境变量否则无法工作：
+>
 >`echo "PATH=\"/usr/local/share/dotnet:\$PATH\"" >> ~/.zshrc && source ~/.zshrc`
 
-但我在 MacOS 中尝试了各种组合，好像都无法转换老鹤制作的安卓百度的挂接码表，只能自己写一个自用了
+但我在 MacOS 中尝试了各种组合，好像都无法转换老鹤制作的安卓百度的挂接码表
+
+同时 Mac 下的 office/WPS 打开码表不分列，所以只能自己写一个自用了
 >小鹤双拼官网网盘链接：http://flypy.ys168.com/
->网盘 - ____3.2.挂接——辅助码 - for安卓百度个性短语.ini
+>
+>下载途径: **<网盘>** - **<____3.2.挂接——辅助码>** - **<for安卓百度个性短语.ini>**
 
 ## 帮助菜单
 
@@ -68,9 +72,8 @@ MacOS/Linux 小鹤双拼码表转换工具
                                 该选项用于指定生成的码表文件名，默认和需转换文件同路径
                                 用法和注意事项等同于 --inputfilename
 
+--check                         (选填)该选项无后续参数，会自动检查转换所需依赖并给出结果以供检查
 -c | --clean                    (选填)该选项无后续参数，会删掉原始未转换的码表文件
-                                举例：
-                                    -c
 -h | --help                     该选项无后续参数，使用后将打印帮助信息并退出脚本
 ```
 
@@ -86,6 +89,18 @@ MacOS/Linux 小鹤双拼码表转换工具
 - 希望一键转换后只保留转换后的码表文件并删掉原始文件
 
 为了实现以上条件，以下提供了两种解决办法（目前 linux 下的适配暂时没做全，MacOS 两种方法均适配完成）
+
+### 检查教程
+
+事先进行测试，看看环境依赖和输入输出路径是否正确：
+
+```bash
+# github 使用请确定你的网络能打开 github
+bash <(curl -Ls https://raw.githubusercontent.com/mylovesaber/xiaoheshuangpin-convert/main/convert.sh) --check
+
+# 国内用户请使用以下命令运行
+bash <(curl -Ls https://gitee.com/mylovesaber/xiaoheshuangpin-convert/raw/main/convert.sh) --check
+```
 
 ### 通用转换教程
 
