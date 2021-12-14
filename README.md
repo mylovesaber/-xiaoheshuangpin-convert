@@ -1,2 +1,113 @@
-# -xiaoheshuangpin-convert
+# xiaoheshuangpin-convert
 一款 MacOS/Linux 平台针对小鹤双拼安卓百度挂接码表的输入法词库转换脚本
+
+该工具针对小鹤双拼官网网盘中为安卓百度输入法定制的 ini 后缀的码表文件进行定向转换，以便全平台的搜狗输入法都能正常挂接使用
+(写此脚本的时候 MacOS Monterey 系统下，鼠须管输入法无法正常切换使用，搜狗成了唯一合适的输入法了)
+该工具未对其他码表做任何适配，其他码表用户切勿尝试
+
+## 创建脚本原因
+
+其实已经有一个通用性比较强的码表转换工具了：
+深蓝词库转换： https://github.com/studyzy/imewlconverter
+>MacOS 下安装完 .Net 包后需要将 dotnet 加入环境变量否则无法工作：
+>`echo "PATH=\"/usr/local/share/dotnet:\$PATH\"" >> ~/.zshrc && source ~/.zshrc`
+
+但我在 MacOS 中尝试了各种组合，好像都无法转换老鹤制作的安卓百度的挂接码表，只能自己写一个自用了
+>小鹤双拼官网网盘链接：http://flypy.ys168.com/
+>网盘 - ____3.2.挂接——辅助码 - for安卓百度个性短语.ini
+
+## 帮助菜单
+
+可以直接 `bash convert.sh -h` 查看帮助菜单：
+
+```shell
+MacOS/Linux 小鹤双拼码表转换工具
+该工具针对以下码表文件进行定向转换，
+以便全平台的搜狗输入法都能正常挂接使用
+该工具未对其他码表做任何适配，其他码表用户切勿尝试
+小鹤双拼官网网盘链接：http://flypy.ys168.com/
+网盘 - ____3.2.挂接——辅助码 - for安卓百度个性短语.ini
+可选选项及用法：
+-u | --username                 (必填)该选项用于指定当前桌面登录的用户名，
+                                并与终端中脚本运行时的用户进行比对，
+                                防止出现权限错误、环境变量注入错误等问题
+                                举例：
+                                    -u "测试 yes"
+                                    --username "Mike"
+
+-s | --speedlink                (选填)利用国内github镜像站加速依赖环境的下载
+                                内置国内加速源：
+                                tsinghua (清华源) <- 推荐
+                                ghproxy (公共github加速)
+                                举例：
+                                    -s tsinghua
+
+-i | --inputfile                (二选一必填)该选项用于指定需要转换的文件对应的绝对路径
+                                如果文件名或路径存在中文路径，请用英文双引号括起来
+                                建议选择纯英文路径！
+                                一旦使用，则必须且只能和 --outputfile 搭配使用
+                                举例：
+                                    -i /Users/"做个人吧"/data/"for安卓百度个性短语.ini"
+                                    --inputfile /Users/Mike/need_converted.ini
+
+-o | --outputfile               (二选一必填)该选项用于指定转换后的文件对应的绝对路径
+                                注意事项和举例等同于 --inputfile
+                                一旦使用，则必须且只能和 --inputfile 搭配使用
+
+
+-I | --inputfilename            (二选一必填)该选项只有 MacOS 可用，linux 勿试，暂未适配
+                                该选项的参数必须是单纯的文件名，利用 MacOS 独有的 Spotslight
+                                实现快速定位需转换的码表文件，当出现重复文件时会停止运行并警告
+                                该选项一旦使用，则必须且只能和 --inputfile 搭配使用
+                                建议改成英文名再使用，最好用英文双引号括起来
+                                举例：
+                                    -I "for安卓百度个性短语.ini"
+                                    --inputfilename "test.ini"
+
+-O | --outputfilename           (二选一必填)该选项只有 MacOS 可用，linux 勿试， 暂未适配
+                                该选项用于指定生成的码表文件名，默认和需转换文件同路径
+                                用法和注意事项等同于 --inputfilename
+
+-c | --clean                    (选填)该选项无后续参数，会删掉原始未转换的码表文件
+                                举例：
+                                    -c
+-h | --help                     该选项无后续参数，使用后将打印帮助信息并退出脚本
+```
+
+## 使用教程
+
+对于路径和用户名推荐全部用英文双引号括起来防止读取错误
+
+假设有以下情况:
+- 当前系统登录的用户名为：Mike
+- 全新的 MacOS 系统未安装 homebrew，网络环境无法打开 github，首次安装和日常使用的镜像源选择清华源
+- 需要转换的码表文件所在的绝对路径是： "/Users/Mike/need_convert.ini"
+- 想要输出到的路径以及自定义码表文件输出名： "/Users/Mike/output/converted.ini"
+- 希望一键转换后只保留转换后的码表文件并删掉原始文件
+
+为了实现以上条件，以下提供了两种解决办法（目前 linux 下的适配暂时没做全，MacOS 两种方法均适配完成）
+
+### 通用转换教程
+
+不限制系统的前提下可以使用以下命令(**具体参数请自行更改**)：
+
+```bash
+# github 使用请确定你的网络能打开 github
+bash <(curl -Ls https://raw.githubusercontent.com/mylovesaber/xiaoheshuangpin-convert/main/convert.sh) -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" -c
+
+# 国内用户请使用以下命令运行
+bash <(curl -Ls https://gitee.com/mylovesaber/xiaoheshuangpin-convert/raw/main/convert.sh) -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" -c
+```
+
+### MacOS 专用转换教程
+
+ MacOS 下利用 Spotslight 的专用工具 mdfind 实现瞬间精准定位(类似 linux 下的 locate 命令)，所以如果你是 MacOS 用户且不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
+
+ ```bash
+# github 使用请确定你的网络能打开 github
+bash <(curl -Ls https://raw.githubusercontent.com/mylovesaber/xiaoheshuangpin-convert/main/convert.sh) -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini" -c
+
+# 国内用户请使用以下命令运行
+bash <(curl -Ls https://gitee.com/mylovesaber/xiaoheshuangpin-convert/raw/main/convert.sh) -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini" -c
+ ```
+
