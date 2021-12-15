@@ -278,10 +278,9 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
         _warning "并不是程序无响应，请耐心等待且不要强制退出"
         updatedb 2>/dev/null
         FIXED_PATH=$(locate "${INPUT_NAME}")
-        locate "${INPUT_NAME}" # 插眼
     fi
     count=0
-    for i in "${FIXED_PATH}"; do
+    for i in $(echo -e "${FIXED_PATH}"); do
         count=$(expr $count + 1)
     done
     if [[ ${count} != 1 ]]; then
@@ -298,11 +297,7 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
 else
     _error "输入了多余选项参数！只能同时存在要转换文件转换前后的 <绝对路径> 或 <文件名>"
     exit 1
-fi # 插眼四行
-${FIXED_PATH}
-${FINAL_PATH}
-${FINAL_INPUT_INFO}
-${FINAL_OUTPUT_INFO}
+fi
 #检查属主权限、输入文件、输出路径是否存在
 if [[ ! -f "${FINAL_INPUT_INFO}" ]]; then
     _error "需转换的文件不存在，请确认需转换文件的路径完全正确"
