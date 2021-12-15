@@ -123,7 +123,7 @@ function _check(){
 if [[ $EUID == 0 ]]; then
     _error "当前在 root 模式下，请回退到系统当前登录的用户下再运行此脚本以防权限出错"
     exit 1
-elif [[ ! "${username}" == "$(id -F)" ]]; then
+elif [[ ! "${username}" == "$(whoami)" ]]; then
     _error "系统当前登录的用户与指定的用户名不同，请设置成当前桌面登录用户名再运行此脚本以防权限出错"
     exit 1
 fi
