@@ -366,7 +366,7 @@ _info "临时文件路径信息: "$(_print "${FINAL_PATH}")
 }
 
 function _convert(){
-dos2unix -b -n "${FINAL_INPUT_INFO}" "${FINAL_PATH}"/tmp.ini
+dos2unix -b -n "${FINAL_INPUT_INFO}" "${FINAL_PATH}"/tmp.ini >.log 2>&1
 sed -i 's/=/-/g' "${FINAL_PATH}"/tmp.ini
 sed -i 's/,/=/g' "${FINAL_PATH}"/tmp.ini
 sed -i 's/-/,/g' "${FINAL_PATH}"/tmp.ini
