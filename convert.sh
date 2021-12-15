@@ -362,13 +362,13 @@ elif [[ ${SYSTEM_TYPE} =~ "Debian"|"Ubuntu" ]]; then
     if ! which dos2unix > /dev/null 2>&1; then
         _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y dos2unix")
     else
-        _success "basename 已安装"
+        _success "dos2unix 已安装"
     fi
     if ! which locate > /dev/null 2>&1; then
         _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y locate && updatedb")
         _error "请注意，执行 updatedb 命令后系统将建立全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，请耐心等待"
     else
-        _success "basename 已安装"
+        _success "locate 已安装"
     fi
 fi
 _info "最终输入文件路径信息: "$(_print "${FINAL_INPUT_INFO}")
