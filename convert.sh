@@ -117,6 +117,8 @@ else
     _error "暂未适配该系统，退出..."
     exit 1
 fi
+_success "此脚本支持该系统！"
+_info "继续检测中..."
 }
 
 function _check(){
@@ -287,7 +289,7 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
         FINAL_INPUT_INFO="${FIXED_PATH}"
         FINAL_OUTPUT_INFO="${FINAL_PATH}/${OUTPUT_NAME}"
     elif [[ "${SYSTEM_TYPE}" =~ "Debian"|"Ubuntu" ]]; then
-        _warning "开始创建或更新全局文件数据库，数据库建立或更新时间可能会很长"
+        _warning "开始创建或更新全局文件数据库，耗时可能会很长"
         _warning "并不是程序无响应，请耐心等待且不要强制退出"
         updatedb
         FIXED_PATH=$(locate "${INPUT_NAME}" 2>/dev/null)
@@ -342,7 +344,6 @@ fi
 
 function _check_result(){
 if [[ ${SYSTEM_TYPE} == "MacOS" ]]; then
-    _success "此脚本支持该系统！继续检测中..."
     _info "系统信息: "
     _print "$(sw_vers 2>/dev/null)"
     if ! which xcode-select > /dev/null 2>&1; then
@@ -371,7 +372,6 @@ if [[ ${SYSTEM_TYPE} == "MacOS" ]]; then
         _success "dos2unix 已安装"
     fi
 elif [[ ${SYSTEM_TYPE} =~ "Debian"|"Ubuntu" ]]; then
-    _success "此脚本支持该系统！继续检测中..."
     _info "系统信息: "
     _print "$(lsb_release -a 2>/dev/null)"
     _check_aptdep
