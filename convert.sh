@@ -273,47 +273,35 @@ elif [[ -n "${INPUT_PATH_NAME}" && -n "${OUTPUT_PATH_NAME}" ]]; then
 elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
     if [[ "${SYSTEM_TYPE}" == "MacOS" ]]; then
         FIXED_PATH=$(mdfind -name "${INPUT_NAME}")
-        count=0
-        for i in "${FIXED_PATH}"; do
-            count=$(expr $count + 1)
-        done
-        if [[ ${count} != 1 ]]; then
-            _error "同名文件有多个，请确认以下路径的文件均为你自行下载的码表文件"
-            _error "如果存在非自行下载的码表文件，请将你需要保留的码表文件名改名"
-            _error "请只保留一个码表文件用于转换，之后重新运行此脚本"
-            _error "以下是所有同名文件列表:"
-            echo -e "${FIXED_PATH}"
-            exit 1
-        fi
-        FINAL_PATH=$(dirname "${FIXED_PATH}")
-        FINAL_INPUT_INFO="${FIXED_PATH}"
-        FINAL_OUTPUT_INFO="${FINAL_PATH}/${OUTPUT_NAME}"
     elif [[ "${SYSTEM_TYPE}" =~ "Debian"|"Ubuntu" ]]; then
         _warning "开始创建或更新全局文件数据库，耗时可能会很长"
         _warning "并不是程序无响应，请耐心等待且不要强制退出"
-        updatedb
-        FIXED_PATH=$(locate "${INPUT_NAME}" 2>/dev/null)
-        count=0
-        for i in "${FIXED_PATH}"; do
-            count=$(expr $count + 1)
-        done
-        if [[ ${count} != 1 ]]; then
-            _error "同名文件有多个，请确认以下路径的文件均为你自行下载的码表文件"
-            _error "如果存在非自行下载的码表文件，请将你需要保留的码表文件名改名"
-            _error "请只保留一个码表文件用于转换，之后重新运行此脚本"
-            _error "以下是所有同名文件列表:"
-            echo -e "${FIXED_PATH}"
-            exit 1
-        fi
-        FINAL_PATH=$(dirname "${FIXED_PATH}")
-        FINAL_INPUT_INFO="${FIXED_PATH}"
-        FINAL_OUTPUT_INFO="${FINAL_PATH}/${OUTPUT_NAME}"
+        updatedb 2>/dev/null
+        FIXED_PATH=$(locate "${INPUT_NAME}")
     fi
+    count=0
+    for i in "${FIXED_PATH}"; do
+        count=$(expr $count + 1)
+    done
+    if [[ ${count} != 1 ]]; then
+        _error "同名文件有多个，请确认以下路径的文件均为你自行下载的码表文件"
+        _error "如果存在非自行下载的码表文件，请将你需要保留的码表文件名改名"
+        _error "请只保留一个码表文件用于转换，之后重新运行此脚本"
+        _error "以下是所有同名文件列表:"
+        echo -e "${FIXED_PATH}"
+        exit 1
+    fi
+    FINAL_PATH=$(dirname "${FIXED_PATH}")
+    FINAL_INPUT_INFO="${FIXED_PATH}"
+    FINAL_OUTPUT_INFO="${FINAL_PATH}/${OUTPUT_NAME}"
 else
     _error "输入了多余选项参数！只能同时存在要转换文件转换前后的 <绝对路径> 或 <文件名>"
     exit 1
 fi
-
+${FIXED_PATH}
+${FINAL_PATH}
+${FINAL_INPUT_INFO}
+${FINAL_OUTPUT_INFO}
 #检查属主权限、输入文件、输出路径是否存在
 if [[ ! -f "${FINAL_INPUT_INFO}" ]]; then
     _error "需转换的文件不存在，请确认需转换文件的路径完全正确"
