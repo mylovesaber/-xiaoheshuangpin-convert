@@ -31,6 +31,9 @@ MacOS/Linux 小鹤双拼码表转换工具
 该工具未对其他码表做任何适配，其他码表用户切勿尝试
 小鹤双拼官网网盘链接：http://flypy.ys168.com/
 网盘 - ____3.2.挂接——辅助码 - for安卓百度个性短语.ini
+
+已适配系统：MacOS/Ubuntu/Debian
+
 可选选项及用法：
 -u | --username                 (必填)该选项用于指定当前桌面登录的用户名，
                                 并与终端中脚本运行时的用户进行比对，
@@ -43,9 +46,12 @@ MacOS/Linux 小鹤双拼码表转换工具
                                 内置国内加速源：
                                 tsinghua (清华源) <- 推荐
                                 ghproxy (公共github加速)
+                                仅限 MacOS 有效，Linux 无此功能
                                 举例：
                                     -s tsinghua
 
+输入输出文件有两种方案：绝对路径组合 或 文件名组合，每一种组合都包括了对应的输入输出方式，只能二选一
+绝对路径组合：
 -i | --inputfile                (二选一必填)该选项用于指定需要转换的文件对应的绝对路径
                                 如果文件名或路径存在中文路径，请用英文双引号括起来
                                 建议选择纯英文路径！
@@ -58,18 +64,17 @@ MacOS/Linux 小鹤双拼码表转换工具
                                 注意事项和举例等同于 --inputfile
                                 一旦使用，则必须且只能和 --inputfile 搭配使用
 
-
--I | --inputfilename            (二选一必填)该选项只有 MacOS 可用，linux 勿试，暂未适配
-                                该选项的参数必须是单纯的文件名，利用 MacOS 独有的 Spotslight
+文件名组合：
+-I | --inputfilename            (二选一必填)该选项的参数必须是单纯的文件名
+                                利用 MacOS 独有的 Spotslight 或 linux 的 locate
                                 实现快速定位需转换的码表文件，当出现重复文件时会停止运行并警告
-                                该选项一旦使用，则必须且只能和 --inputfile 搭配使用
+                                该选项一旦使用，则必须且只能和 --outputfilename 搭配使用
                                 建议改成英文名再使用，最好用英文双引号括起来
                                 举例：
                                     -I "for安卓百度个性短语.ini"
                                     --inputfilename "test.ini"
 
--O | --outputfilename           (二选一必填)该选项只有 MacOS 可用，linux 勿试， 暂未适配
-                                该选项用于指定生成的码表文件名，默认和需转换文件同路径
+-O | --outputfilename           (二选一必填)该选项用于指定生成的码表文件名，默认和需转换文件同路径
                                 用法和注意事项等同于 --inputfilename
 
 --check                         (选填)该选项无后续参数，会自动检查转换所需依赖并给出结果以供检查
@@ -90,39 +95,43 @@ MacOS/Linux 小鹤双拼码表转换工具
 
 为了实现以上条件，以下提供了两种解决办法（目前 linux 下的适配暂时没做全，MacOS 两种方法均适配完成）
 
-### 检查教程
+### 1. 下载项目
 
-事先进行测试，看看环境依赖和输入输出路径是否正确：
-
-```bash
-# github 使用请确定你的网络能打开 github
-bash <(curl -Ls https://raw.githubusercontent.com/mylovesaber/xiaoheshuangpin-convert/main/convert.sh) --check
-
-# 国内用户请使用以下命令运行
-bash <(curl -Ls https://gitee.com/mylovesaber/xiaoheshuangpin-convert/raw/main/convert.sh) --check
-```
-
-### 通用转换教程
-
-不限制系统的前提下可以使用以下命令(**具体参数请自行更改**)：
+根据网络情况二选一：
 
 ```bash
 # github 使用请确定你的网络能打开 github
-bash <(curl -Ls https://raw.githubusercontent.com/mylovesaber/xiaoheshuangpin-convert/main/convert.sh) -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" -c
+git clone https://github.com/mylovesaber/xiaoheshuangpin-convert.git && cd xiaoheshuangpin-convert
 
 # 国内用户请使用以下命令运行
-bash <(curl -Ls https://gitee.com/mylovesaber/xiaoheshuangpin-convert/raw/main/convert.sh) -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" -c
+git clone https://gitee.com/mylovesaber/xiaoheshuangpin-convert.git && cd xiaoheshuangpin-convert
 ```
 
-### MacOS 专用转换教程
+### 2. 检查环境
 
- MacOS 下利用 Spotslight 的专用工具 mdfind 实现瞬间精准定位(类似 linux 下的 locate 命令)，所以如果你是 MacOS 用户且不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
+事先进行测试，看看环境依赖是否满足、输入输出路径是否正确(**具体参数请自行更改**)：
+
+```bash
+# 以下两种命令方案不限制系统，只是其中 "-s tsinghua" 在 linux 下无效，故 linux 用户可以删掉这部分
+# 绝对路径方案：
+bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini"  --check
+
+# 文件名方案：
+bash ./convert.sh -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini"  --check
+```
+
+### 3. 转换码表
+#### 3.1 绝对路径方案
+
+```bash
+bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" -c
+```
+
+#### 3.2 文件名方案
+
+ MacOS 下利用 Spotslight 的专用工具 mdfind 实现瞬间精准定位，linux 下使用 locate 命令也能实现该效果，所以如果你不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，届时则需要你手动删掉其他同名文件再运行脚本，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
 
  ```bash
-# github 使用请确定你的网络能打开 github
-bash <(curl -Ls https://raw.githubusercontent.com/mylovesaber/xiaoheshuangpin-convert/main/convert.sh) -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini" -c
-
-# 国内用户请使用以下命令运行
-bash <(curl -Ls https://gitee.com/mylovesaber/xiaoheshuangpin-convert/raw/main/convert.sh) -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini" -c
+bash ./convert.sh -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini" -c
  ```
 
