@@ -278,6 +278,7 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
         _warning "并不是程序无响应，请耐心等待且不要强制退出"
         updatedb 2>/dev/null
         FIXED_PATH=$(locate "${INPUT_NAME}")
+        locate "${INPUT_NAME}" # 插眼
     fi
     count=0
     for i in "${FIXED_PATH}"; do
@@ -297,7 +298,7 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
 else
     _error "输入了多余选项参数！只能同时存在要转换文件转换前后的 <绝对路径> 或 <文件名>"
     exit 1
-fi
+fi # 插眼四行
 ${FIXED_PATH}
 ${FINAL_PATH}
 ${FINAL_INPUT_INFO}
