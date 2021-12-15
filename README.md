@@ -27,6 +27,9 @@
 
 可以直接 `bash convert.sh -h` 查看帮助菜单：
 
+<details>
+  <summary>点击此行展开帮助信息</summary>
+
 ```shell
 MacOS/Linux 小鹤双拼码表转换工具
 该工具针对以下码表文件进行定向转换，
@@ -38,14 +41,15 @@ MacOS/Linux 小鹤双拼码表转换工具
 已适配系统：MacOS/Ubuntu/Debian
 
 可选选项及用法：
--u | --username                 (必填)该选项用于指定当前桌面登录的用户名，
+-u | --username                 (MacOS 必填)该选项用于指定当前桌面登录的用户名，
                                 并与终端中脚本运行时的用户进行比对，
                                 防止出现权限错误、环境变量注入错误等问题
+                                仅限 MacOS 必填，Linux 无此功能
                                 举例：
                                     -u "测试 yes"
                                     --username "Mike"
 
--s | --speedlink                (选填)利用国内github镜像站加速依赖环境的下载
+-s | --speedlink                (MacOS 选填)利用国内github镜像站加速依赖环境的下载
                                 内置国内加速源：
                                 tsinghua (清华源) <- 推荐
                                 ghproxy (公共github加速)
@@ -85,6 +89,8 @@ MacOS/Linux 小鹤双拼码表转换工具
 -h | --help                     该选项无后续参数，使用后将打印帮助信息并退出脚本
 ```
 
+</details>
+
 ## 使用教程
 
 对于路径和用户名推荐全部用英文双引号括起来防止读取错误
@@ -96,7 +102,13 @@ MacOS/Linux 小鹤双拼码表转换工具
 - 想要输出到的路径以及自定义码表文件输出名： "/Users/Mike/output/converted.ini"
 - 希望一键转换后只保留转换后的码表文件并删掉原始文件
 
-为了实现以上条件，以下提供了两种解决办法（目前 linux 下的适配暂时没做全，MacOS 两种方法均适配完成）
+为了实现以上条件，以下提供了两种解决办法，以下所有命令的选项参数均参考以上介绍和对应帮助信息
+
+
+<details>
+  <summary>MacOS 使用方法点击此行展开</summary>
+
+### 0. MacOS 全程在非 root 环境下操作
 
 ### 1. 下载项目
 
@@ -115,12 +127,11 @@ git clone https://gitee.com/mylovesaber/xiaoheshuangpin-convert.git && cd xiaohe
 事先进行测试，看看环境依赖是否满足、输入输出路径是否正确(**具体参数请自行更改**)：
 
 ```bash
-# 以下两种命令方案不限制系统，只是其中 "-s tsinghua" 在 linux 下无效，故 linux 用户可以删掉这部分
 # 绝对路径方案：
-bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini"  --check
+bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" --check
 
 # 文件名方案：
-bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini"  --check
+bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini" --check
 ```
 
 ### 3. 转换码表
@@ -132,9 +143,63 @@ bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/U
 
 #### 3.2 文件名方案
 
- MacOS 下利用 Spotslight 的专用工具 mdfind 实现瞬间精准定位，linux 下使用 locate 命令也能实现该效果，所以如果你不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，届时则需要你手动删掉其他同名文件再运行脚本，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
+ MacOS 下利用 Spotslight 的专用工具 mdfind 实现瞬间精准定位，所以如果你不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，届时则需要你手动删掉其他同名文件再运行脚本，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
 
  ```bash
 bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini" -c
  ```
 
+</details>
+
+<details>
+  <summary>Linux 使用方法点击此行展开</summary>
+
+### 0. Linux 全程在 root 环境下操作
+
+提权三种方式：
+1. `su` 前提是曾经切换到 root 下并设置了密码，否则无法登录
+2. `sudo -i` 当前用户的登录密码
+3. 在后文所有命令前面加上 `sudo` 字样，首次运行命令的时候会提示输入密码并回车即可
+
+以下所有命令默认已执行第一第二种提权方式进入 root 权限了
+
+### 1. 下载项目
+
+根据网络情况二选一：
+
+```bash
+# github 使用请确定你的网络能打开 github
+git clone https://github.com/mylovesaber/xiaoheshuangpin-convert.git && cd xiaoheshuangpin-convert
+
+# 国内用户请使用以下命令运行
+git clone https://gitee.com/mylovesaber/xiaoheshuangpin-convert.git && cd xiaoheshuangpin-convert
+```
+
+### 2. 检查环境
+
+事先进行测试，看看环境依赖是否满足、输入输出路径是否正确(**具体参数请自行更改**)：
+
+```bash
+# 绝对路径方案：
+bash ./convert.sh -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" --check
+
+# 文件名方案：
+bash ./convert.sh -I "need_convert.ini" -O "converted.ini" --check
+```
+
+### 3. 转换码表
+#### 3.1 绝对路径方案
+
+```bash
+bash ./convert.sh -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini" -c
+```
+
+#### 3.2 文件名方案
+
+Linux 下使用 locate 命令实现瞬间精准定位，但之前会创建或更新数据库，所以会有一段时间形似无响应，切勿手动停止脚本运行。如果你不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，届时则需要你手动删掉其他同名文件再运行脚本，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
+
+ ```bash
+bash ./convert.sh -I "need_convert.ini" -O "converted.ini" -c
+ ```
+
+</details>

@@ -120,12 +120,20 @@ fi
 
 function _check(){
 # 检查 root
-if [[ $EUID == 0 ]]; then
-    _error "当前在 root 模式下，请回退到系统当前登录的用户下再运行此脚本以防权限出错"
-    exit 1
-elif [[ ! "${username}" == "$(whoami)" ]]; then
-    _error "系统当前登录的用户与指定的用户名不同，请设置成当前桌面登录用户名再运行此脚本以防权限出错"
-    exit 1
+if [[ "${SYSTEM_TYPE}" == "MacOS" ]]; then
+    if [[ $EUID == 0 ]]; then
+        _error "当前在 root 模式下，请回退到系统当前登录的用户下再运行此脚本以防权限出错"
+        exit 1
+    elif [[ ! "${username}" == "$(whoami)" ]]; then
+        _error "系统当前登录的用户与指定的用户名不同，请设置成当前桌面登录用户名再运行此脚本以防权限出错"
+        exit 1
+    fi
+fi
+if [[ "${SYSTEM_TYPE}" =~ "Debian"|"Ubuntu" ]]; then
+    if [[ $EUID != 0 ]]; then
+        _error "当前在普通用户模式下，请提权到 root 下再运行此脚本，或在运行命令前加上 sudo 以防部分系统级功能无法使用"
+        exit 1
+    fi
 fi
 
 # 必备软件包检查
@@ -139,22 +147,27 @@ _check_convert_file
 }
 
 function _check_aptdep(){
-APTERROR=0
 if ! which basename > /dev/null 2>&1; then
-    _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y coreutils")
-    APTERROR=1
+    _warning "缺少 basename，正在安装依赖..."
+    apt install -y coreutils
+else
+    _success "basename 已安装"
 fi
 if ! which dos2unix > /dev/null 2>&1; then
-    _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y dos2unix")
-    APTERROR=1
+    _warning "缺少 dos2unix，正在安装依赖..."
+    apt install -y dos2unix
+else
+    _success "dos2unix 已安装"
 fi
 if ! which locate > /dev/null 2>&1; then
-    _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y locate && updatedb")
-    _error "请注意，执行 updatedb 命令后系统将建立全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，请耐心等待"
-    APTERROR=1
-fi
-if [[ "${APTERROR}" == 1 ]]; then
-    exit 1
+    _warning "缺少 locate，正在安装依赖..."
+    apt install -y locate
+    _warning "开始创建全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，并不是程序无响应，请耐心等待且不要强制退出"
+    updatedb
+else
+    _success "locate 已安装"
+    _warning "开始创建全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，并不是程序无响应，请耐心等待且不要强制退出"
+    updatedb
 fi
 }
 
@@ -277,8 +290,8 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
         FINAL_INPUT_INFO="${FIXED_PATH}"
         FINAL_OUTPUT_INFO="${FINAL_PATH}/${OUTPUT_NAME}"
     elif [[ "${SYSTEM_TYPE}" =~ "Debian"|"Ubuntu" ]]; then
-        updatedb
-        FIXED_PATH=$(locate "${INPUT_NAME}")
+        updatedb 
+        FIXED_PATH=$(locate "${INPUT_NAME}" 2>/dev/null)
         count=0
         for i in "${FIXED_PATH}"; do
             count=$(expr $count + 1)
@@ -305,10 +318,13 @@ if [[ ! -f "${FINAL_INPUT_INFO}" ]]; then
     _error "需转换的文件不存在，请确认需转换文件的路径完全正确"
     exit 1
 fi
-belong_to=$(ls -l "${FINAL_INPUT_INFO}" | awk '{print $3}')
-if [[ "${username}" != "${belong_to}" ]]; then
-    _error "需转换文件的属主和当前登录桌面的用户名不同，请手动将属主改成当前登录名后再试"
-    exit 1
+
+if [[ "${SYSTEM_TYPE}" == "MacOS" ]]; then
+    belong_to=$(ls -l "${FINAL_INPUT_INFO}" | awk '{print $3}')
+    if [[ "${username}" != "${belong_to}" ]]; then
+        _error "需转换文件的属主和当前登录桌面的用户名不同，请手动将属主改成当前登录名后再试"
+        exit 1
+    fi
 fi
 if [[ ! -d "${FINAL_PATH}" ]]; then
     _warning "指定的输出目录路径不存在，将尝试创建对应文件夹路径..."
@@ -354,22 +370,7 @@ elif [[ ${SYSTEM_TYPE} =~ "Debian"|"Ubuntu" ]]; then
     _success "此脚本支持该系统！继续检测中..."
     _info "系统信息: "
     _print "$(lsb_release -a 2>/dev/null)"
-    if ! which basename > /dev/null 2>&1; then
-        _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y coreutils")
-    else
-        _success "basename 已安装"
-    fi
-    if ! which dos2unix > /dev/null 2>&1; then
-        _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y dos2unix")
-    else
-        _success "dos2unix 已安装"
-    fi
-    if ! which locate > /dev/null 2>&1; then
-        _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y locate && updatedb")
-        _error "请注意，执行 updatedb 命令后系统将建立全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，请耐心等待"
-    else
-        _success "locate 已安装"
-    fi
+    _check_aptdep
 fi
 _info "最终输入文件路径信息: "$(_print "${FINAL_INPUT_INFO}")
 _info "最终输出文件路径信息: "$(_print "${FINAL_OUTPUT_INFO}")
