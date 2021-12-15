@@ -91,7 +91,7 @@ MacOS/Linux 小鹤双拼码表转换工具
 
 </details>
 
-## 使用教程
+## 教程前提
 
 对于路径和用户名推荐全部用英文双引号括起来防止读取错误
 
@@ -104,9 +104,10 @@ MacOS/Linux 小鹤双拼码表转换工具
 
 为了实现以上条件，以下提供了两种解决办法，以下所有命令的选项参数均参考以上介绍和对应帮助信息
 
+## 分系统使用教程
 
 <details>
-  <summary>MacOS 使用方法点击此行展开</summary>
+  <summary>**MacOS 使用方法点击此行展开**</summary>
 
 ### 0. MacOS 全程在非 root 环境下操作
 
@@ -152,7 +153,7 @@ bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini"
 </details>
 
 <details>
-  <summary>Linux 使用方法点击此行展开</summary>
+  <summary>**Linux 使用方法点击此行展开**</summary>
 
 ### 0. Linux 全程在 root 环境下操作
 

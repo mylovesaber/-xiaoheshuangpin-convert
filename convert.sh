@@ -52,14 +52,15 @@ MacOS/Linux 小鹤双拼码表转换工具
 已适配系统：MacOS/Ubuntu/Debian
 
 可选选项及用法：
--u | --username                 (必填)该选项用于指定当前桌面登录的用户名，
+-u | --username                 (MacOS 必填)该选项用于指定当前桌面登录的用户名，
                                 并与终端中脚本运行时的用户进行比对，
                                 防止出现权限错误、环境变量注入错误等问题
+                                仅限 MacOS 必填，Linux 无此功能
                                 举例：
                                     -u "测试 yes"
                                     --username "Mike"
 
--s | --speedlink                (选填)利用国内github镜像站加速依赖环境的下载
+-s | --speedlink                (MacOS 选填)利用国内github镜像站加速依赖环境的下载
                                 内置国内加速源：
                                 tsinghua (清华源) <- 推荐
                                 ghproxy (公共github加速)
