@@ -163,12 +163,8 @@ fi
 if ! which locate > /dev/null 2>&1; then
     _warning "缺少 locate，正在安装依赖..."
     apt install -y locate
-    _warning "开始创建全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，并不是程序无响应，请耐心等待且不要强制退出"
-    updatedb
 else
     _success "locate 已安装"
-    _warning "开始创建全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，并不是程序无响应，请耐心等待且不要强制退出"
-    updatedb
 fi
 }
 
@@ -291,7 +287,9 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
         FINAL_INPUT_INFO="${FIXED_PATH}"
         FINAL_OUTPUT_INFO="${FINAL_PATH}/${OUTPUT_NAME}"
     elif [[ "${SYSTEM_TYPE}" =~ "Debian"|"Ubuntu" ]]; then
-        updatedb 
+        _warning "开始创建或更新全局文件数据库，数据库建立或更新时间可能会很长"
+        _warning "并不是程序无响应，请耐心等待且不要强制退出"
+        updatedb
         FIXED_PATH=$(locate "${INPUT_NAME}" 2>/dev/null)
         count=0
         for i in "${FIXED_PATH}"; do
@@ -321,18 +319,23 @@ if [[ ! -f "${FINAL_INPUT_INFO}" ]]; then
 fi
 
 if [[ "${SYSTEM_TYPE}" == "MacOS" ]]; then
-    belong_to=$(ls -l "${FINAL_INPUT_INFO}" | awk '{print $3}')
-    if [[ "${username}" != "${belong_to}" ]]; then
+    belong_to_owner=$(ls -l "${FINAL_INPUT_INFO}" | awk '{print $3}')
+    if [[ "${username}" != "${belong_to_owner}" ]]; then
         _error "需转换文件的属主和当前登录桌面的用户名不同，请手动将属主改成当前登录名后再试"
         exit 1
     fi
-fi
-if [[ ! -d "${FINAL_PATH}" ]]; then
-    _warning "指定的输出目录路径不存在，将尝试创建对应文件夹路径..."
-    mkdir -p "${FINAL_PATH}"
-    if [[ "$?" != 0 ]]; then
-        _error "输出目录创建失败，请确认指定的输出路径是否存在权限冲突"
-        exit 1
+    if [[ ! -d "${FINAL_PATH}" ]]; then
+        _warning "指定的输出目录路径不存在，将尝试创建对应文件夹路径..."
+        mkdir -p "${FINAL_PATH}"
+        if [[ "$?" != 0 ]]; then
+            _error "输出目录创建失败，请确认指定的输出路径是否存在权限冲突"
+            exit 1
+        fi
+    fi
+elif [[ "${SYSTEM_TYPE}" =~ "Debian"|"Ubuntu" ]]; then
+    if [[ ! -d "${FINAL_PATH}" ]]; then
+        _warning "指定的输出目录路径不存在，将尝试创建对应文件夹路径..."
+        mkdir -p "${FINAL_PATH}"
     fi
 fi
 }

@@ -107,7 +107,7 @@ MacOS/Linux 小鹤双拼码表转换工具
 ## 分系统使用教程
 
 <details>
-  <summary>**MacOS 使用方法点击此行展开**</summary>
+  <summary>MacOS 使用方法点击此行展开</summary>
 
 ### 0. MacOS 全程在非 root 环境下操作
 
@@ -152,8 +152,10 @@ bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini"
 
 </details>
 
+---
+
 <details>
-  <summary>**Linux 使用方法点击此行展开**</summary>
+  <summary>Linux 使用方法点击此行展开</summary>
 
 ### 0. Linux 全程在 root 环境下操作
 
