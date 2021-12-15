@@ -34,7 +34,6 @@ OUTPUT_NAME=
 FINAL_INPUT_INFO=
 FINAL_OUTPUT_INFO=
 FINAL_PATH=
-FINAL_PATH_OUT=
 SYSTEM_TYPE=
 clean=0
 check=0
@@ -103,7 +102,7 @@ MacOS/Linux 小鹤双拼码表转换工具
 
 function _checksys(){
 # 检查系统信息
-_info "正在检查系统版本..."
+_info "正在检查系统环境兼容性..."
 if [ -f /usr/bin/sw_vers ]; then
     SYSTEM_TYPE="MacOS"
 elif [ -f /usr/bin/lsb_release ]; then
@@ -197,10 +196,14 @@ if ! which brew > /dev/null 2>&1; then
                 echo 'export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"'
                 echo 'export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"'
             } >> /Users/"${username}"/.zprofile
-            source /Users/"${username}"/.zprofile
+            export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
+            export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
+            export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
         elif [[ "${ARCH}" == "arm64" ]]; then
-            test -r /Users/"${username}"/.bash_profile && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/"${username}"/.bash_profile && source /Users/"${username}"/.bash_profile
-            test -r /Users/"${username}"/.zprofile && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/"${username}"/.zprofile && source /Users/"${username}"/.zprofile
+            test -r /Users/"${username}"/.bash_profile && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/"${username}"/.bash_profile
+            test -r /Users/"${username}"/.zprofile && echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/"${username}"/.zprofile
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+            eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
     elif [[ ${speedlink} =~ "ghproxy" ]]; then
         export HOMEBREW_BREW_GIT_REMOTE="https://ghproxy.com/https://github.com/Homebrew/brew.git"
@@ -214,7 +217,8 @@ if ! which brew > /dev/null 2>&1; then
             echo 'export HOMEBREW_BREW_GIT_REMOTE="https://ghproxy.com/https://github.com/Homebrew/brew.git"'
             echo 'export HOMEBREW_CORE_GIT_REMOTE="https://ghproxy.com/https://github.com/Homebrew/homebrew-core.git"'
         } >> /Users/"${username}"/.zprofile
-        source /Users/"${username}"/.zprofile
+        export HOMEBREW_BREW_GIT_REMOTE="https://ghproxy.com/https://github.com/Homebrew/brew.git"
+        export HOMEBREW_CORE_GIT_REMOTE="https://ghproxy.com/https://github.com/Homebrew/homebrew-core.git"
     fi
 fi
 if which brew > /dev/null 2>&1; then
@@ -232,7 +236,8 @@ if which brew > /dev/null 2>&1; then
         _warning "缺少依赖: dos2unix，正在安装 dos2unix..."
         brew install dos2unix
     fi
-    source ~/.zshrc
+    export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+    export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
 fi
 }
 
@@ -245,25 +250,26 @@ function _check_convert_file(){
 # FINAL_INPUT_INFO=
 # FINAL_OUTPUT_INFO=
 # FINAL_PATH=
-# FINAL_PATH_OUT=
+# FINAL_PATH=
 if [[ -z "${INPUT_PATH_NAME}" && -z "${OUTPUT_PATH_NAME}" && -z "${INPUT_NAME}" && -z "${OUTPUT_NAME}" ]]; then
     _error "必须同时指定要转换文件转换前后的 <绝对路径> 或 <文件名>"
     exit 1
 elif [[ -n "${INPUT_PATH_NAME}" && -n "${OUTPUT_PATH_NAME}" ]]; then
     FINAL_INPUT_INFO="${INPUT_PATH_NAME}"
     FINAL_OUTPUT_INFO="${OUTPUT_PATH_NAME}"
-    FINAL_PATH_OUT=$(dirname "${FINAL_OUTPUT_INFO}")
+    FINAL_PATH=$(dirname "${FINAL_OUTPUT_INFO}")
 elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
     if [[ "${SYSTEM_TYPE}" == "MacOS" ]]; then
         FIXED_PATH=$(mdfind -name "${INPUT_NAME}")
         count=0
         for i in "${FIXED_PATH}"; do
-            count++
+            count=$(expr $count + 1)
         done
         if [[ ${count} != 1 ]]; then
             _error "同名文件有多个，请确认以下路径的文件均为你自行下载的码表文件"
             _error "如果存在非自行下载的码表文件，请将你需要保留的码表文件名改名"
-            _error "请只保留一个码表文件用于转换，之后重新运行此脚本:"
+            _error "请只保留一个码表文件用于转换，之后重新运行此脚本"
+            _error "以下是所有同名文件列表:"
             echo -e "${FIXED_PATH}"
             exit 1
         fi
@@ -275,12 +281,13 @@ elif [[ -n "${INPUT_NAME}" && -n "${OUTPUT_NAME}" ]]; then
         FIXED_PATH=$(locate "${INPUT_NAME}")
         count=0
         for i in "${FIXED_PATH}"; do
-            count++
+            count=$(expr $count + 1)
         done
         if [[ ${count} != 1 ]]; then
             _error "同名文件有多个，请确认以下路径的文件均为你自行下载的码表文件"
             _error "如果存在非自行下载的码表文件，请将你需要保留的码表文件名改名"
-            _error "请只保留一个码表文件用于转换，之后重新运行此脚本:"
+            _error "请只保留一个码表文件用于转换，之后重新运行此脚本"
+            _error "以下是所有同名文件列表:"
             echo -e "${FIXED_PATH}"
             exit 1
         fi
@@ -303,9 +310,9 @@ if [[ "${username}" != "${belong_to}" ]]; then
     _error "需转换文件的属主和当前登录桌面的用户名不同，请手动将属主改成当前登录名后再试"
     exit 1
 fi
-if [[ ! -d "${FINAL_PATH_OUT}" ]]; then
+if [[ ! -d "${FINAL_PATH}" ]]; then
     _warning "指定的输出目录路径不存在，将尝试创建对应文件夹路径..."
-    mkdir -p "${FINAL_PATH_OUT}"
+    mkdir -p "${FINAL_PATH}"
     if [[ "$?" != 0 ]]; then
         _error "输出目录创建失败，请确认指定的输出路径是否存在权限冲突"
         exit 1
@@ -314,14 +321,19 @@ fi
 }
 
 function _check_result(){
-_info "系统信息: "
 if [[ ${SYSTEM_TYPE} == "MacOS" ]]; then
+    _success "此脚本支持该系统！继续检测中..."
+    _info "系统信息: "
     _print "$(sw_vers 2>/dev/null)"
-    if which xcode-select > /dev/null 2>&1; then
-        _success "开发者工具包已安装！"
+    if ! which xcode-select > /dev/null 2>&1; then
+        _error "xcode-select 未安装，请重新运行脚本进行安装"
+    else
+        _success "开发者工具包已安装"
     fi
-    if which brew > /dev/null 2>&1; then
-        _success "HomeBrew 已安装！"
+    if ! which brew > /dev/null 2>&1; then
+        _error "HomeBrew 未安装，请重新运行脚本进行安装"
+    else
+        _success "HomeBrew 已安装"
     fi
     if ! brew list gnu-sed > /dev/null 2>&1; then
         _error "gnu-sed 未安装，请重新运行脚本进行安装"
@@ -339,10 +351,29 @@ if [[ ${SYSTEM_TYPE} == "MacOS" ]]; then
         _success "dos2unix 已安装"
     fi
 elif [[ ${SYSTEM_TYPE} =~ "Debian"|"Ubuntu" ]]; then
+    _success "此脚本支持该系统！继续检测中..."
+    _info "系统信息: "
     _print "$(lsb_release -a 2>/dev/null)"
+    if ! which basename > /dev/null 2>&1; then
+        _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y coreutils")
+    else
+        _success "basename 已安装"
+    fi
+    if ! which dos2unix > /dev/null 2>&1; then
+        _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y dos2unix")
+    else
+        _success "basename 已安装"
+    fi
+    if ! which locate > /dev/null 2>&1; then
+        _error "缺少必要依赖，请手动切换到 root 权限执行命令安装后再运行此脚本: "$(_print "apt install -y locate && updatedb")
+        _error "请注意，执行 updatedb 命令后系统将建立全局文件数据库，视电脑性能和文件数量情况，数据库建立时间可能会很长，请耐心等待"
+    else
+        _success "basename 已安装"
+    fi
 fi
 _info "最终输入文件路径信息: "$(_print "${FINAL_INPUT_INFO}")
 _info "最终输出文件路径信息: "$(_print "${FINAL_OUTPUT_INFO}")
+_info "临时文件路径信息: "$(_print "${FINAL_PATH}")
 }
 
 function _convert(){
@@ -352,15 +383,17 @@ sed -i 's/,/=/g' "${FINAL_PATH}"/tmp.ini
 sed -i 's/-/,/g' "${FINAL_PATH}"/tmp.ini
 unix2dos < "${FINAL_PATH}"/tmp.ini | iconv -f UTF-8 -t UTF-16LE > "${FINAL_OUTPUT_INFO}"
 rm -rf "${FINAL_PATH}"/tmp.ini
-_success "已完成转换，输出文件路径: "$(_print "${FINAL_OUTPUT_INFO}")
+[[ $? != 0 ]] && _error "转换出现错误，退出中..." && exit 1
+_success "已完成转换!"
+_info "输出文件路径: "$(_print "${FINAL_OUTPUT_INFO}")
 if [[ ${clean} == 0 ]]; then
-    _success "原始文件路径: "$(_print "${FINAL_INPUT_INFO}")
-    _success "原始文件可自行删除"
+    _info "原始文件路径: "$(_print "${FINAL_INPUT_INFO}")
+    _info "原始文件可自行删除"
 elif [[ ${clean} == 1 ]]; then
     rm -rf "${FINAL_INPUT_INFO}"
     _success "原始文件已删除"
 fi
-_success "之后请将转换后的码表文件内容自行导入搜狗输入法的 <自定义短语设置>"
+_info "之后请将转换后的码表文件内容自行导入搜狗输入法的 <自定义短语设置>"
 }
 
 _checksys

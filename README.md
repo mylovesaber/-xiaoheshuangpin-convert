@@ -9,13 +9,16 @@
 
 其实已经有一个通用性比较强的码表转换工具了：
 深蓝词库转换： https://github.com/studyzy/imewlconverter
+
 >MacOS 下安装完 .Net 包后需要将 dotnet 加入环境变量否则无法工作：
 >
 >`echo "PATH=\"/usr/local/share/dotnet:\$PATH\"" >> ~/.zshrc && source ~/.zshrc`
 
 但我在 MacOS 中尝试了各种组合，好像都无法转换老鹤制作的安卓百度的挂接码表
 
-同时 Mac 下的 office/WPS 打开码表不分列，所以只能自己写一个自用了
+同时 Mac 下的 office/WPS 打开码表不分列没法继续编辑，所以只能自己写一个自用了
+脚本转换所需文件获取方式如下：
+
 >小鹤双拼官网网盘链接：http://flypy.ys168.com/
 >
 >下载途径: **<网盘>** - **<____3.2.挂接——辅助码>** - **<for安卓百度个性短语.ini>**
@@ -117,7 +120,7 @@ git clone https://gitee.com/mylovesaber/xiaoheshuangpin-convert.git && cd xiaohe
 bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/Users/Mike/output/converted.ini"  --check
 
 # 文件名方案：
-bash ./convert.sh -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini"  --check
+bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini"  --check
 ```
 
 ### 3. 转换码表
@@ -132,6 +135,6 @@ bash ./convert.sh -u "Mike" -s tsinghua -i "/Users/Mike/need_convert.ini" -o "/U
  MacOS 下利用 Spotslight 的专用工具 mdfind 实现瞬间精准定位，linux 下使用 locate 命令也能实现该效果，所以如果你不了解绝对路径如何获取的话，可以直接使用文件名作为输入源，脚本会自动查找对应绝对路径并完成转换，如果存在重名情况会自动报错并退出，届时则需要你手动删掉其他同名文件再运行脚本，所以请确保输入名和转换后的文件名都是独一无二的，由于没有指定路径所以默认生成的文件和需要转换的源文件在同一个目录下：
 
  ```bash
-bash ./convert.sh -u "Mike" -s tsinghua -i "need_convert.ini" -o "converted.ini" -c
+bash ./convert.sh -u "Mike" -s tsinghua -I "need_convert.ini" -O "converted.ini" -c
  ```
 
